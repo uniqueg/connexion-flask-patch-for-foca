@@ -1,18 +1,24 @@
 """Petstore controllers."""
 
 import logging
+from typing import Dict, List, Optional
 
-from flask import (current_app, make_response)
-from pymongo.collection import Collection
+from flask import make_response
+from flask.wrappers import Response
+from connexion_patch import current_app
+from pymongo.collection import Collection, Cursor
 
 from exceptions import NotFound
 
 logger = logging.getLogger(__name__)
 
 
-def findPets(limit=None, tags=None):
+def findPets(
+    limit: Optional[int] = None,
+    tags: Optional[List] = None,
+) -> List[Cursor]:
     db_collection: Collection = (
-        current_app.config.foca.db.dbs['petstore']
+        current_app.foca.db.dbs['petstore']
         .collections['pets'].client
     )
     filter_dict = {} if tags is None else {'tag': {'$in': tags}}
@@ -25,15 +31,16 @@ def findPets(limit=None, tags=None):
     return list(records)
 
 
-def addPet(pet):
+def addPet(pet: Dict) -> Dict:
     db_collection: Collection = (
-        current_app.config.foca.db.dbs['petstore']
+        current_app.foca.db.dbs['petstore']
         .collections['pets'].client
     )
-    counter = 0
+    counter: int = 0
     ctr = db_collection.find({}).sort([('$natural', -1)])
     if not ctr.count() == 0:
-        counter = ctr[0].get('id') + 1
+        document: Dict[str, int] = dict(ctr[0])
+        counter = document['id'] + 1
     record = {
         "id": counter,
         "name": pet['name'],
@@ -44,9 +51,9 @@ def addPet(pet):
     return record
 
 
-def findPetById(id):
+def findPetById(id: int) -> Optional[Dict]:
     db_collection: Collection = (
-        current_app.config.foca.db.dbs['petstore']
+        current_app.foca.db.dbs['petstore']
         .collections['pets'].client
     )
     record = db_collection.find_one(
@@ -58,9 +65,9 @@ def findPetById(id):
     return record
 
 
-def deletePet(id):
+def deletePet(id: int) -> Response:
     db_collection: Collection = (
-        current_app.config.foca.db.dbs['petstore']
+        current_app.foca.db.dbs['petstore']
         .collections['pets'].client
     )
     record = db_collection.find_one(

@@ -5,7 +5,9 @@ from connexion.apps.flask_app import (
     NumberConverter,
 )
 from flask import Flask
+from flask.globals import _find_app
 from foca.models.config import Config
+from werkzeug.local import LocalProxy
 
 
 class FocaApp(Flask):
@@ -44,3 +46,6 @@ class FlaskApp(FlaskAppOriginal):
         app.url_map.converters['float'] = NumberConverter
         app.url_map.converters['int'] = IntegerConverter
         return app
+
+
+current_app: FocaApp = LocalProxy(_find_app)  # type: ignore

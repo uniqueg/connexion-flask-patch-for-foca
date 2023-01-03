@@ -1,7 +1,7 @@
 from flask import Flask
-from connexion_patch import FlaskApp as FlaskApp, FocaApp
+from connexion_patch import FlaskApp as current_app, FlaskApp, FocaApp
 
-app: FocaApp = FlaskApp(__name__, specification_dir='./').app
+app: FocaApp = FlaskApp(__name__, specification_dir='./').app  # type: ignore
 print(dir(app.foca))
 # editor is now aware of `app.foca` and its properties, but only if the type
 # `FocaApp` is explicitly hinted at; otherwise the type of `app` is `None` (as
